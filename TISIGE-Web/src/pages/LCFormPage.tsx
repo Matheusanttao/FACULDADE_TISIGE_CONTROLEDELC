@@ -119,7 +119,11 @@ export function LCFormPage() {
       mergedForFlow.statusAprovacao === 'reprovado');
 
   const title =
-    mode === 'create' ? 'Nova LC' : readOnly ? 'Detalhes da LC' : 'Editar LC';
+    mode === 'create'
+      ? 'Novo desenho técnico'
+      : readOnly
+        ? 'Detalhes do desenho técnico'
+        : 'Editar desenho técnico';
 
   const onSave = async () => {
     if (!form.os.trim() || !form.cliente.trim() || !form.equipamento.trim()) {
@@ -172,7 +176,7 @@ export function LCFormPage() {
     }
     if (
       !confirm(
-        'Os dados serão salvos e a LC ficará na fila do aprovador. Continuar?'
+        'Os dados serão salvos e o desenho ficará na fila do aprovador. Continuar?'
       )
     ) {
       return;
@@ -210,7 +214,7 @@ export function LCFormPage() {
         <h1 className="text-xl font-bold text-white">{title}</h1>
       </div>
 
-      <div className="mx-auto max-w-2xl space-y-4">
+      <div className="mx-auto max-w-6xl space-y-4">
         {row ? (
           <div className="space-y-3 rounded-2xl border border-[var(--color-tisige-border)] bg-[var(--color-tisige-elevated)] p-4">
             <div className="flex flex-wrap items-center gap-2">
@@ -258,91 +262,98 @@ export function LCFormPage() {
           </div>
         ) : null}
 
-        <Input
-          label="Arquivo/link do desenho técnico"
-          value={form.arquivo}
-          onChange={(e) => set('arquivo')(e.target.value)}
-          readOnly={!editable}
-        />
-        <Input
-          label="OS *"
-          value={form.os}
-          onChange={(e) => set('os')(e.target.value)}
-          readOnly={!editable || mode !== 'create'}
-        />
-        <Input
-          label="Cliente *"
-          value={form.cliente}
-          onChange={(e) => set('cliente')(e.target.value)}
-          readOnly={!editable}
-        />
-        <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium text-slate-400">Equipamento *</span>
-          <textarea
-            value={form.equipamento}
-            onChange={(e) => set('equipamento')(e.target.value)}
-            readOnly={!editable}
-            rows={3}
-            className="rounded-xl border border-[var(--color-tisige-border)] bg-[var(--color-tisige-surface)] px-4 py-3 text-[var(--color-tisige-text)] outline-none focus:border-cyan-500/50"
+        <div className="grid gap-4 rounded-2xl border border-[var(--color-tisige-border)] bg-[var(--color-tisige-elevated)] p-4 lg:grid-cols-2">
+          <div className="lg:col-span-2">
+            <Input
+              label="Arquivo/link do desenho técnico"
+              value={form.arquivo}
+              onChange={(e) => set('arquivo')(e.target.value)}
+              readOnly={!editable}
+            />
+          </div>
+          <Input
+            label="OS *"
+            value={form.os}
+            onChange={(e) => set('os')(e.target.value)}
+            readOnly={!editable || mode !== 'create'}
           />
-        </label>
-        <Input
-          label="Data contratual * (AAAA-MM-DD)"
-          value={form.dtContratual}
-          onChange={(e) => set('dtContratual')(e.target.value)}
-          readOnly={!editable}
-        />
-        <Input
-          label="Data recebimento * (AAAA-MM-DD)"
-          value={form.dtRecebimento}
-          onChange={(e) => set('dtRecebimento')(e.target.value)}
-          readOnly={!editable}
-        />
-        <Input
-          label="Data retirada (opcional)"
-          value={form.dtRetirada || ''}
-          onChange={(e) => set('dtRetirada')(e.target.value)}
-          readOnly={!editable}
-        />
-        <Input
-          label="Responsável retirada"
-          value={form.respRetirada}
-          onChange={(e) => set('respRetirada')(e.target.value)}
-          readOnly={!editable}
-        />
-        <Input
-          label="Gaveta"
-          value={form.gaveta || ''}
-          onChange={(e) => set('gaveta')(e.target.value)}
-          readOnly={!editable}
-        />
-        <p className="-mt-2 text-xs text-slate-500">{hintGaveta}</p>
+          <Input
+            label="Cliente *"
+            value={form.cliente}
+            onChange={(e) => set('cliente')(e.target.value)}
+            readOnly={!editable}
+          />
+          <label className="flex flex-col gap-1.5 lg:col-span-2">
+            <span className="text-sm font-medium text-slate-400">Equipamento *</span>
+            <textarea
+              value={form.equipamento}
+              onChange={(e) => set('equipamento')(e.target.value)}
+              readOnly={!editable}
+              rows={3}
+              className="rounded-xl border border-[var(--color-tisige-border)] bg-[var(--color-tisige-surface)] px-4 py-3 text-[var(--color-tisige-text)] outline-none focus:border-cyan-500/50"
+            />
+          </label>
+          <Input
+            label="Data contratual * (AAAA-MM-DD)"
+            value={form.dtContratual}
+            onChange={(e) => set('dtContratual')(e.target.value)}
+            readOnly={!editable}
+          />
+          <Input
+            label="Data recebimento * (AAAA-MM-DD)"
+            value={form.dtRecebimento}
+            onChange={(e) => set('dtRecebimento')(e.target.value)}
+            readOnly={!editable}
+          />
+          <Input
+            label="Data retirada (opcional)"
+            value={form.dtRetirada || ''}
+            onChange={(e) => set('dtRetirada')(e.target.value)}
+            readOnly={!editable}
+          />
+          <Input
+            label="Responsável retirada"
+            value={form.respRetirada}
+            onChange={(e) => set('respRetirada')(e.target.value)}
+            readOnly={!editable}
+          />
+          <div>
+            <Input
+              label="Gaveta"
+              value={form.gaveta || ''}
+              onChange={(e) => set('gaveta')(e.target.value)}
+              readOnly={!editable}
+            />
+            <p className="mt-1 text-xs text-slate-500">{hintGaveta}</p>
+          </div>
+          <Input
+            label="Data limite testes finais (AAAA-MM-DD)"
+            value={form.dataLimiteTestes || ''}
+            onChange={(e) => set('dataLimiteTestes')(e.target.value)}
+            readOnly={!editable}
+          />
 
-        <p className="text-sm font-medium text-slate-400">Setor</p>
-        <div className="flex flex-wrap gap-2">
-          {SETORES.map((s) => (
-            <button
-              key={s}
-              type="button"
-              disabled={!editable}
-              onClick={() => editable && setForm((f) => ({ ...f, setor: s }))}
-              className={`rounded-lg border px-3 py-2 text-sm transition ${
-                form.setor === s
-                  ? 'border-cyan-500/50 bg-cyan-500/10 text-cyan-200'
-                  : 'border-[var(--color-tisige-border)] text-slate-400 hover:bg-white/5'
-              } ${!editable ? 'opacity-50' : ''}`}
-            >
-              {s}
-            </button>
-          ))}
+          <div className="lg:col-span-2">
+            <p className="text-sm font-medium text-slate-400">Setor</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {SETORES.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  disabled={!editable}
+                  onClick={() => editable && setForm((f) => ({ ...f, setor: s }))}
+                  className={`rounded-lg border px-3 py-2 text-sm transition ${
+                    form.setor === s
+                      ? 'border-cyan-500/50 bg-cyan-500/10 text-cyan-200'
+                      : 'border-[var(--color-tisige-border)] text-slate-400 hover:bg-white/5'
+                  } ${!editable ? 'opacity-50' : ''}`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
-
-        <Input
-          label="Data limite testes finais (AAAA-MM-DD)"
-          value={form.dataLimiteTestes || ''}
-          onChange={(e) => set('dataLimiteTestes')(e.target.value)}
-          readOnly={!editable}
-        />
 
         {readOnly ? (
           <p className="text-xs text-slate-500">
@@ -350,21 +361,23 @@ export function LCFormPage() {
           </p>
         ) : null}
 
-        {!readOnly ? (
-          <Button type="button" onClick={() => void onSave()} loading={saving}>
-            Salvar
-          </Button>
-        ) : null}
-        {showSubmit ? (
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={onSubmitApproval}
-            loading={submitting}
-          >
-            <Send className="size-4" /> Enviar para aprovação técnica
-          </Button>
-        ) : null}
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+          {!readOnly ? (
+            <Button type="button" onClick={() => void onSave()} loading={saving}>
+              Salvar
+            </Button>
+          ) : null}
+          {showSubmit ? (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={onSubmitApproval}
+              loading={submitting}
+            >
+              <Send className="size-4" /> Enviar para aprovação técnica
+            </Button>
+          ) : null}
+        </div>
         {row ? <LCHistoryTimeline lcId={row.id} /> : null}
       </div>
     </div>

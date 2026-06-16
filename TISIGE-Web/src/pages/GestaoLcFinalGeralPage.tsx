@@ -35,7 +35,7 @@ export function GestaoLcFinalGeralPage() {
         >
           <ArrowLeft className="size-6" />
         </button>
-        <h1 className="text-xl font-bold text-white">Gestão geral LC final</h1>
+        <h1 className="text-xl font-bold text-white">Gestão geral de prazos</h1>
       </div>
 
       <p className="mb-6 text-sm text-slate-400">
@@ -75,16 +75,16 @@ export function GestaoLcFinalGeralPage() {
                   <dd>{d.limiteTestes}</dd>
                 </div>
                 <div>
-                  <dt className="text-slate-500">LC → PCP</dt>
+                  <dt className="text-slate-500">Desenho → PCP</dt>
                   <dd>{d.limitePcp}</dd>
                 </div>
                 <div>
-                  <dt className="text-slate-500">LC → Comercial</dt>
+                  <dt className="text-slate-500">Desenho → Comercial</dt>
                   <dd>{d.limiteComercial}</dd>
                 </div>
               </dl>
             ) : (
-              <p className="mt-3 text-sm text-slate-500">Defina data limite testes na LC.</p>
+              <p className="mt-3 text-sm text-slate-500">Defina data limite testes no desenho.</p>
             )}
           </div>
         ))}

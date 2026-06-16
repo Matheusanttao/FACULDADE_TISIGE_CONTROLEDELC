@@ -60,14 +60,14 @@ export function ControleLCPage() {
   return (
     <div>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold text-white">Controle de LC</h1>
+        <h1 className="text-2xl font-bold text-white">Desenhos técnicos</h1>
         {fabOk ? (
           <Button
             type="button"
             className="w-full sm:w-auto"
             onClick={() => navigate('/lc/new')}
           >
-            <Plus className="size-4" /> Nova LC
+            <Plus className="size-4" /> Novo desenho
           </Button>
         ) : null}
       </div>

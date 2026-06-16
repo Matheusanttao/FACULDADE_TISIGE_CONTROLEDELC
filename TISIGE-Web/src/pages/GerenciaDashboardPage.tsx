@@ -62,7 +62,7 @@ export function GerenciaDashboardPage() {
       </div>
 
       <p className="mb-6 text-sm text-slate-400">
-        Visão consolidada do fluxo de LCs (status e programação).
+        Visão consolidada do fluxo de desenhos técnicos (status e programação).
       </p>
 
       <div className="mb-8 grid grid-cols-2 gap-3 lg:grid-cols-3">

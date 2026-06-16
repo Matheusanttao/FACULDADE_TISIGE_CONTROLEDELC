@@ -153,7 +153,7 @@ export function HomePage() {
       return {
         to: '/aprovacao',
         title: 'Aprovações pendentes',
-        text: `${stats.aguardando} LC(s) aguardando decisão técnica.`,
+        text: `${stats.aguardando} desenho(s) aguardando decisão técnica.`,
         icon: ShieldCheck,
       };
     }
@@ -161,7 +161,7 @@ export function HomePage() {
       return {
         to: '/pcp-fabricacao',
         title: 'Programação PCP',
-        text: `${stats.aprovados} LC(s) aprovada(s) disponíveis para fabricação.`,
+        text: `${stats.aprovados} desenho(s) aprovado(s) disponíveis para fabricação.`,
         icon: Factory,
       };
     }
@@ -175,8 +175,8 @@ export function HomePage() {
     }
     return {
       to: '/controle-lc',
-      title: 'Controle de desenhos',
-      text: 'Cadastre, consulte e acompanhe suas LCs.',
+      title: 'Gestão de desenhos',
+      text: 'Cadastre, consulte e acompanhe seus desenhos técnicos.',
       icon: PenLine,
     };
   }, [showAprovacao, showGerencia, showPcp, stats.aguardando, stats.aprovados]);
@@ -239,7 +239,7 @@ export function HomePage() {
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <Card
             to="/controle-lc"
-            title="Controle de LC"
+            title="Desenhos técnicos"
             subtitle="Cadastro, consulta, revisão e detalhes dos desenhos técnicos."
             icon={ClipboardList}
           />
@@ -247,7 +247,7 @@ export function HomePage() {
             <Card
               to="/aprovacao"
               title="Aprovação técnica"
-              subtitle="Fila de LCs aguardando análise, aprovação ou reprovação."
+              subtitle="Fila de desenhos aguardando análise, aprovação ou reprovação."
               icon={ShieldCheck}
               accent="#fbbf24"
             />
@@ -256,7 +256,7 @@ export function HomePage() {
             <Card
               to="/pcp-fabricacao"
               title="PCP - Fabricação"
-              subtitle="LCs aprovadas e marcação de programação para produção."
+              subtitle="Desenhos aprovados e marcação de programação para produção."
               icon={Factory}
               accent="#22d3ee"
             />
@@ -281,15 +281,15 @@ export function HomePage() {
           ) : null}
           <Card
             to="/gestao-lc-final"
-            title="Gestão LC final"
-            subtitle="Controle de prazos, testes finais, PCP e comercial por OS."
+            title="Prazos finais"
+            subtitle="Controle de prazos, testes finais, PCP e comercial por desenho."
             icon={Calendar}
             accent="#a78bfa"
           />
           <Card
             to="/gestao-lc-final-geral"
-            title="Gestão geral LC final"
-            subtitle="Visão consolidada das LCs finais e finalização."
+            title="Gestão geral de prazos"
+            subtitle="Visão consolidada dos desenhos finais e finalização."
             icon={Grid3X3}
             accent="#34d399"
           />

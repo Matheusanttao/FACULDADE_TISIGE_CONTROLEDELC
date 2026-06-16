@@ -75,13 +75,13 @@ export function AppLayout() {
             to="/controle-lc"
             className={({ isActive }) => `${navCls} ${isActive ? activeCls : ''}`}
           >
-            <ClipboardList className="size-4 shrink-0" /> Controle LC
+            <ClipboardList className="size-4 shrink-0" /> Desenhos técnicos
           </NavLink>
           <NavLink
             to="/gestao-lc-final"
             className={({ isActive }) => `${navCls} ${isActive ? activeCls : ''}`}
           >
-            <ClipboardList className="size-4 shrink-0" /> Gestão LC final
+            <ClipboardList className="size-4 shrink-0" /> Prazos finais
           </NavLink>
           <NavLink
             to="/gestao-lc-final-geral"

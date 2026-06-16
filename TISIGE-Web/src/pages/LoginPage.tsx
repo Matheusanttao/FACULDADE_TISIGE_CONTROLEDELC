@@ -36,7 +36,7 @@ export function LoginPage() {
           <div className="mb-8 inline-block rounded-full bg-cyan-500/10 px-4 py-1 text-xs font-bold tracking-[0.3em] text-cyan-400">
             TISIGE
           </div>
-          <h1 className="text-2xl font-bold text-white">Controle de LC</h1>
+          <h1 className="text-2xl font-bold text-white">Gestão de Desenhos Técnicos</h1>
           <p className="mt-2 text-sm text-slate-400">
             E-mail ou usuário <span className="text-slate-500">(atalho: admin / admin)</span>
           </p>

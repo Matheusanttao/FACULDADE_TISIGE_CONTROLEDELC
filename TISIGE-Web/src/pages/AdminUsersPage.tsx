@@ -116,7 +116,7 @@ export function AdminUsersPage() {
       </div>
 
       <p className="mb-6 text-sm text-slate-400">
-        Defina papéis no fluxo. Tipo A edita LCs; tipo B é leitura.
+        Defina papéis no fluxo. Tipo A edita desenhos; tipo B é leitura.
       </p>
 
       {err ? <p className="mb-4 text-sm text-red-400">{err}</p> : null}

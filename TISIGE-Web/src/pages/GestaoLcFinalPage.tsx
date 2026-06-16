@@ -59,7 +59,7 @@ export function GestaoLcFinalPage() {
         >
           <ArrowLeft className="size-6" />
         </button>
-        <h1 className="text-xl font-bold text-white">Gestão LC final</h1>
+        <h1 className="text-xl font-bold text-white">Prazos finais do desenho</h1>
       </div>
 
       <p className="mb-6 text-sm text-slate-400">
@@ -87,17 +87,17 @@ export function GestaoLcFinalPage() {
                 <dd className="font-semibold text-white">{dates.limiteTestes}</dd>
               </div>
               <div>
-                <dt className="text-xs text-slate-500">LC → PCP</dt>
+                <dt className="text-xs text-slate-500">Desenho → PCP</dt>
                 <dd className="font-semibold text-white">{dates.limitePcp}</dd>
               </div>
               <div>
-                <dt className="text-xs text-slate-500">LC → Comercial</dt>
+                <dt className="text-xs text-slate-500">Desenho → Comercial</dt>
                 <dd className="font-semibold text-white">{dates.limiteComercial}</dd>
               </div>
             </dl>
           ) : (
             <p className="mt-4 text-sm text-amber-200/80">
-              Defina data limite testes na LC para calcular os prazos.
+              Defina data limite testes no desenho para calcular os prazos.
             </p>
           )}
         </div>
