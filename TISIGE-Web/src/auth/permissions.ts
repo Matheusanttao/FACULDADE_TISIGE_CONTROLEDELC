@@ -47,6 +47,11 @@ export function canManageUsers(user: User | null): boolean {
   return user?.tipo === 'A' && resolvePapel(user) === 'admin';
 }
 
+export function canChangeLCStatus(user: User | null): boolean {
+  if (!user || user.tipo !== 'A') return false;
+  return ['admin', 'desenhista', 'aprovador', 'pcp'].includes(resolvePapel(user));
+}
+
 export function canViewGerenciaDashboard(user: User | null): boolean {
   if (!user) return false;
   if (resolvePapel(user) === 'gerencia' && user.tipo === 'A') return true;

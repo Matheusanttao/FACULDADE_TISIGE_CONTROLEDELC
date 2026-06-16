@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Send } from 'lucide-react';
 import {
+  canChangeLCStatus,
   canCreateLC,
   canEditLCRecord,
   canSubmitForApproval,
@@ -13,7 +14,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useAuthStore } from '@/store/authStore';
 import { useLCStore } from '@/store/lcStore';
-import { SETORES, type ControleLC } from '@/types/models';
+import { SETORES, type ControleLC, type StatusAprovacao } from '@/types/models';
 
 const empty: Omit<ControleLC, 'id'> = {
   arquivo: '',
@@ -53,10 +54,12 @@ export function LCFormPage() {
   const findById = useLCStore((s) => s.findById);
   const fetchById = useLCStore((s) => s.fetchById);
   const submitForApproval = useLCStore((s) => s.submitForApproval);
+  const changeStatus = useLCStore((s) => s.changeStatus);
 
   const [form, setForm] = useState<Omit<ControleLC, 'id'>>(empty);
   const [saving, setSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [statusChanging, setStatusChanging] = useState(false);
 
   const editing = mode === 'edit' && id;
   const viewing = mode === 'view' && id;
@@ -98,8 +101,6 @@ export function LCFormPage() {
     (key: keyof Omit<ControleLC, 'id'>) => (v: string) =>
       setForm((f) => ({ ...f, [key]: v }));
 
-  const hintGaveta = useMemo(() => 'G1: 01–30 · G2: 31–60 · G3: 61+', []);
-
   const editable =
     !readOnly &&
     (mode === 'create'
@@ -125,6 +126,26 @@ export function LCFormPage() {
         ? 'Detalhes do desenho técnico'
         : 'Editar desenho técnico';
 
+  const onManualStatusChange = async (status: StatusAprovacao) => {
+    if (!row) return;
+    if (
+      !confirm(
+        `Alterar status do desenho OS ${row.os} para "${status}"? Esta ação ficará no histórico.`
+      )
+    ) {
+      return;
+    }
+    setStatusChanging(true);
+    try {
+      const r = await changeStatus(row.id, status);
+      if (!r.ok) {
+        alert(r.error ?? 'Erro');
+      }
+    } finally {
+      setStatusChanging(false);
+    }
+  };
+
   const onSave = async () => {
     if (!form.os.trim() || !form.cliente.trim() || !form.equipamento.trim()) {
       alert('Preencha OS, cliente e equipamento.');
@@ -134,15 +155,6 @@ export function LCFormPage() {
       alert('Datas contratual e recebimento: formato AAAA-MM-DD.');
       return;
     }
-    if (form.dtRetirada && !isIsoDate(form.dtRetirada)) {
-      alert('Data retirada inválida.');
-      return;
-    }
-    if (form.dataLimiteTestes && !isIsoDate(form.dataLimiteTestes)) {
-      alert('Data limite testes inválida.');
-      return;
-    }
-
     setSaving(true);
     try {
       if (mode === 'create') {
@@ -259,6 +271,26 @@ export function LCFormPage() {
                 </p>
               </div>
             ) : null}
+            {canChangeLCStatus(user) ? (
+              <label className="flex flex-col gap-1.5 pt-2 sm:max-w-xs">
+                <span className="text-sm font-medium text-slate-400">
+                  Alterar status manualmente
+                </span>
+                <select
+                  value={form.statusAprovacao}
+                  disabled={statusChanging}
+                  onChange={(e) =>
+                    void onManualStatusChange(e.target.value as StatusAprovacao)
+                  }
+                  className="rounded-xl border border-[var(--color-tisige-border)] bg-[var(--color-tisige-surface)] px-4 py-3 text-[var(--color-tisige-text)] outline-none focus:border-cyan-500/50"
+                >
+                  <option value="rascunho">Rascunho</option>
+                  <option value="aguardando_aprovacao">Aguardando aprovação</option>
+                  <option value="aprovado">Aprovado</option>
+                  <option value="reprovado">Reprovado</option>
+                </select>
+              </label>
+            ) : null}
           </div>
         ) : null}
 
@@ -305,34 +337,6 @@ export function LCFormPage() {
             onChange={(e) => set('dtRecebimento')(e.target.value)}
             readOnly={!editable}
           />
-          <Input
-            label="Data retirada (opcional)"
-            value={form.dtRetirada || ''}
-            onChange={(e) => set('dtRetirada')(e.target.value)}
-            readOnly={!editable}
-          />
-          <Input
-            label="Responsável retirada"
-            value={form.respRetirada}
-            onChange={(e) => set('respRetirada')(e.target.value)}
-            readOnly={!editable}
-          />
-          <div>
-            <Input
-              label="Gaveta"
-              value={form.gaveta || ''}
-              onChange={(e) => set('gaveta')(e.target.value)}
-              readOnly={!editable}
-            />
-            <p className="mt-1 text-xs text-slate-500">{hintGaveta}</p>
-          </div>
-          <Input
-            label="Data limite testes finais (AAAA-MM-DD)"
-            value={form.dataLimiteTestes || ''}
-            onChange={(e) => set('dataLimiteTestes')(e.target.value)}
-            readOnly={!editable}
-          />
-
           <div className="lg:col-span-2">
             <p className="text-sm font-medium text-slate-400">Setor</p>
             <div className="mt-2 flex flex-wrap gap-2">

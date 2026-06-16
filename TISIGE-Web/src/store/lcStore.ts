@@ -64,6 +64,7 @@ interface LCState {
   submitForApproval: (id: string) => Promise<{ ok: boolean; error?: string }>;
   approve: (id: string, aprovadorNome: string) => Promise<{ ok: boolean; error?: string }>;
   reject: (id: string, motivo: string) => Promise<{ ok: boolean; error?: string }>;
+  changeStatus: (id: string, status: StatusAprovacao) => Promise<{ ok: boolean; error?: string }>;
   setProgramadoFabricacao: (id: string, value: boolean) => Promise<void>;
   clear: () => void;
 }
@@ -326,6 +327,55 @@ export const useLCStore = create<LCState>()((set, get) => ({
       }`,
       lcId: id,
     });
+    return { ok: true };
+  },
+
+  changeStatus: async (id, status) => {
+    const target = get().items.find((x) => x.id === id);
+    if (!target) return { ok: false, error: 'Registro não encontrado.' };
+    if (target.statusAprovacao === status) return { ok: true };
+
+    const actor = useAuthStore.getState().user;
+    const timestamp = nowIso();
+    const patch = {
+      status_aprovacao: status,
+      enviado_aprovacao_em:
+        status === 'aguardando_aprovacao'
+          ? timestamp
+          : target.enviadoAprovacaoEm ?? null,
+      aprovado_em: status === 'aprovado' ? timestamp : null,
+      reprovado_em: status === 'reprovado' ? timestamp : null,
+      aprovador_nome:
+        status === 'aprovado' ? actor?.nome ?? target.aprovadorNome ?? 'Aprovador' : null,
+      motivo_reprovacao:
+        status === 'reprovado'
+          ? target.motivoReprovacao ?? 'Status alterado manualmente.'
+          : null,
+    };
+
+    const { data, error } = await supabase
+      .from('controle_lc')
+      .update(patch)
+      .eq('id', id)
+      .select('*')
+      .single();
+    if (error) return { ok: false, error: error.message };
+
+    const updated = rowToControleLC(data as ControleLcRow);
+    set((s) => ({
+      items: s.items.map((x) => (x.id === id ? normalizeLc(updated) : x)),
+    }));
+    void recordLcHistory(
+      updated,
+      status === 'aprovado'
+        ? 'aprovado'
+        : status === 'reprovado'
+          ? 'reprovado'
+          : status === 'aguardando_aprovacao'
+            ? 'enviado_aprovacao'
+            : 'editado',
+      `Status alterado manualmente de ${target.statusAprovacao} para ${status}.`
+    );
     return { ok: true };
   },
 
