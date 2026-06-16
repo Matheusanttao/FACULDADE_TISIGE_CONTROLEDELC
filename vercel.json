@@ -1,0 +1,11 @@
+{
+  "installCommand": "cd TISIGE-Web && npm install",
+  "buildCommand": "cd TISIGE-Web && npm run build",
+  "outputDirectory": "TISIGE-Web/dist",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
