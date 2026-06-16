@@ -63,9 +63,21 @@ export function PcpFabricacaoPage() {
               <span className="font-bold text-cyan-300">OS {item.os}</span>
               <StatusBadge status={item.statusAprovacao} />
             </div>
+            <p className="mt-1 text-xs font-semibold text-slate-500">
+              Revisão {item.revisao}
+              {item.aprovadorNome ? ` · Aprovado por ${item.aprovadorNome}` : ''}
+            </p>
             <p className="mt-2 text-slate-200">{item.cliente}</p>
             <p className="text-sm text-slate-500">{item.equipamento}</p>
             <p className="mt-2 text-xs text-slate-600">Receb. {isoToBR(item.dtRecebimento)}</p>
+            {item.programadoFabricacao && item.pcpNome ? (
+              <p className="mt-2 text-xs text-cyan-300">
+                Programado por {item.pcpNome}
+                {item.programadoFabricacaoEm
+                  ? ` em ${new Date(item.programadoFabricacaoEm).toLocaleString('pt-BR')}`
+                  : ''}
+              </p>
+            ) : null}
             <label className="mt-4 flex items-center justify-between gap-2 text-sm text-slate-300">
               Programado para fabricação
               <input

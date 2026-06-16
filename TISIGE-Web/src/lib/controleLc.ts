@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 export type ControleLcRow = {
   id: string;
   arquivo: string | null;
+  revisao: number | null;
   os: string;
   cliente: string;
   equipamento: string;
@@ -21,6 +22,11 @@ export type ControleLcRow = {
   reprovado_em: string | null;
   aprovador_nome: string | null;
   programado_fabricacao: boolean;
+  programado_fabricacao_em: string | null;
+  pcp_nome: string | null;
+  enviado_aprovacao_em: string | null;
+  criado_por_nome: string | null;
+  updated_at: string | null;
 };
 
 function isoDateOnly(s: string | null | undefined): string {
@@ -32,6 +38,7 @@ export function rowToControleLC(row: ControleLcRow): ControleLC {
   return {
     id: row.id,
     arquivo: row.arquivo ?? '',
+    revisao: row.revisao ?? 0,
     os: row.os,
     cliente: row.cliente,
     equipamento: row.equipamento,
@@ -51,12 +58,18 @@ export function rowToControleLC(row: ControleLcRow): ControleLC {
     reprovadoEm: row.reprovado_em ?? undefined,
     aprovadorNome: row.aprovador_nome ?? undefined,
     programadoFabricacao: row.programado_fabricacao ?? false,
+    programadoFabricacaoEm: row.programado_fabricacao_em ?? undefined,
+    pcpNome: row.pcp_nome ?? undefined,
+    enviadoAprovacaoEm: row.enviado_aprovacao_em ?? undefined,
+    criadoPorNome: row.criado_por_nome ?? undefined,
+    updatedAt: row.updated_at ?? undefined,
   };
 }
 
 export function controleLcToInsert(row: Omit<ControleLC, 'id'>) {
   return {
     arquivo: row.arquivo || null,
+    revisao: row.revisao ?? 0,
     os: row.os.trim(),
     cliente: row.cliente.trim(),
     equipamento: row.equipamento.trim(),
@@ -74,6 +87,10 @@ export function controleLcToInsert(row: Omit<ControleLC, 'id'>) {
     reprovado_em: row.reprovadoEm ?? null,
     aprovador_nome: row.aprovadorNome ?? null,
     programado_fabricacao: row.programadoFabricacao ?? false,
+    programado_fabricacao_em: row.programadoFabricacaoEm ?? null,
+    pcp_nome: row.pcpNome ?? null,
+    enviado_aprovacao_em: row.enviadoAprovacaoEm ?? null,
+    criado_por_nome: row.criadoPorNome ?? null,
   };
 }
 
@@ -82,6 +99,7 @@ export function controleLcToUpdate(
 ): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   if (patch.arquivo !== undefined) out.arquivo = patch.arquivo || null;
+  if (patch.revisao !== undefined) out.revisao = patch.revisao;
   if (patch.os !== undefined) out.os = patch.os.trim();
   if (patch.cliente !== undefined) out.cliente = patch.cliente.trim();
   if (patch.equipamento !== undefined) out.equipamento = patch.equipamento.trim();
@@ -106,6 +124,13 @@ export function controleLcToUpdate(
     out.aprovador_nome = patch.aprovadorNome ?? null;
   if (patch.programadoFabricacao !== undefined)
     out.programado_fabricacao = patch.programadoFabricacao;
+  if (patch.programadoFabricacaoEm !== undefined)
+    out.programado_fabricacao_em = patch.programadoFabricacaoEm ?? null;
+  if (patch.pcpNome !== undefined) out.pcp_nome = patch.pcpNome ?? null;
+  if (patch.enviadoAprovacaoEm !== undefined)
+    out.enviado_aprovacao_em = patch.enviadoAprovacaoEm ?? null;
+  if (patch.criadoPorNome !== undefined)
+    out.criado_por_nome = patch.criadoPorNome ?? null;
   return out;
 }
 
@@ -126,6 +151,7 @@ const LC_TIMEOUT_MSG =
 const CONTROLE_LC_SELECT = `
   id,
   arquivo,
+  revisao,
   os,
   cliente,
   equipamento,
@@ -142,7 +168,12 @@ const CONTROLE_LC_SELECT = `
   aprovado_em,
   reprovado_em,
   aprovador_nome,
-  programado_fabricacao
+  programado_fabricacao,
+  programado_fabricacao_em,
+  pcp_nome,
+  enviado_aprovacao_em,
+  criado_por_nome,
+  updated_at
 `;
 
 export async function fetchAllControleLc(): Promise<ControleLC[]> {

@@ -1,9 +1,10 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { StatusBadge } from '@/components/StatusBadge';
+import { fetchRecentLcHistory } from '@/lib/lcHistory';
 import { useLCStore } from '@/store/lcStore';
-import type { ControleLC, StatusAprovacao } from '@/types/models';
+import type { ControleLC, LcHistoryEvent, StatusAprovacao } from '@/types/models';
 
 function countBy(items: ControleLC[], s: StatusAprovacao) {
   return items.filter((x) => x.statusAprovacao === s).length;
@@ -12,6 +13,7 @@ function countBy(items: ControleLC[], s: StatusAprovacao) {
 export function GerenciaDashboardPage() {
   const navigate = useNavigate();
   const items = useLCStore((s) => s.items);
+  const [history, setHistory] = useState<LcHistoryEvent[]>([]);
 
   const stats = useMemo(() => {
     const programados = items.filter(
@@ -31,6 +33,20 @@ export function GerenciaDashboardPage() {
     () => [...items].sort((a, b) => b.id.localeCompare(a.id)).slice(0, 12),
     [items]
   );
+
+  useEffect(() => {
+    let alive = true;
+    void fetchRecentLcHistory(10)
+      .then((list) => {
+        if (alive) setHistory(list);
+      })
+      .catch(() => {
+        if (alive) setHistory([]);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [items]);
 
   return (
     <div>
@@ -68,10 +84,48 @@ export function GerenciaDashboardPage() {
             to={`/lc/${row.id}`}
             className="flex items-center justify-between rounded-xl border border-[var(--color-tisige-border)] bg-[var(--color-tisige-elevated)] px-4 py-3 transition hover:border-cyan-500/30"
           >
-            <span className="font-semibold text-cyan-300">OS {row.os}</span>
-            <StatusBadge status={row.statusAprovacao} />
+            <div>
+              <span className="font-semibold text-cyan-300">OS {row.os}</span>
+              <p className="text-xs text-slate-500">Rev. {row.revisao}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              {row.programadoFabricacao ? (
+                <span className="rounded-full bg-cyan-500/10 px-2 py-0.5 text-xs text-cyan-300">
+                  PCP
+                </span>
+              ) : null}
+              <StatusBadge status={row.statusAprovacao} />
+            </div>
           </Link>
         ))}
+      </div>
+
+      <h2 className="mb-3 mt-8 text-sm font-bold uppercase tracking-wider text-slate-500">
+        Últimas ações rastreadas
+      </h2>
+      <div className="space-y-2">
+        {history.length === 0 ? (
+          <p className="text-sm text-slate-500">Nenhuma ação registrada ainda.</p>
+        ) : (
+          history.map((event) => (
+            <Link
+              key={event.id}
+              to={`/lc/${event.lcId}`}
+              className="block rounded-xl border border-[var(--color-tisige-border)] bg-[var(--color-tisige-elevated)] px-4 py-3 transition hover:border-cyan-500/30"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="font-semibold text-cyan-300">OS {event.os}</span>
+                <span className="text-xs text-slate-600">
+                  {new Date(event.createdAt).toLocaleString('pt-BR')}
+                </span>
+              </div>
+              <p className="mt-1 text-sm text-slate-300">{event.descricao}</p>
+              <p className="mt-1 text-xs text-slate-500">
+                Responsável: {event.responsavelNome}
+              </p>
+            </Link>
+          ))
+        )}
       </div>
     </div>
   );

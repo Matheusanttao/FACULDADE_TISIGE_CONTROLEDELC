@@ -8,7 +8,9 @@ import {
   rowToControleLC,
   type ControleLcRow,
 } from '@/lib/controleLc';
+import { recordLcHistory } from '@/lib/lcHistory';
 import { supabase } from '@/lib/supabase';
+import { useAuthStore } from '@/store/authStore';
 import { useNotificationStore } from '@/store/notificationStore';
 
 function nowIso(): string {
@@ -18,10 +20,29 @@ function nowIso(): string {
 function normalizeLc(row: ControleLC): ControleLC {
   return {
     ...row,
+    revisao: row.revisao ?? 0,
     statusAprovacao: row.statusAprovacao ?? 'rascunho',
     programadoFabricacao: row.programadoFabricacao ?? false,
     gestaoFinalizado: row.gestaoFinalizado ?? false,
   };
+}
+
+function hasTechnicalChange(target: ControleLC, patch: Partial<ControleLC>): boolean {
+  return [
+    'arquivo',
+    'cliente',
+    'equipamento',
+    'dtContratual',
+    'dtRecebimento',
+    'dtRetirada',
+    'respRetirada',
+    'setor',
+    'gaveta',
+    'dataLimiteTestes',
+  ].some((key) => {
+    const k = key as keyof ControleLC;
+    return patch[k] !== undefined && patch[k] !== target[k];
+  });
 }
 
 const LC_CACHE_MS = 30_000;
@@ -109,8 +130,11 @@ export const useLCStore = create<LCState>()((set, get) => ({
   add: async (row) => {
     const exists = get().items.some((x) => x.os === row.os.trim());
     if (exists) return { ok: false, error: 'Já existe uma LC com esta OS.' };
+    const actor = useAuthStore.getState().user;
     const payload = controleLcToInsert({
       ...row,
+      revisao: row.revisao ?? 0,
+      criadoPorNome: row.criadoPorNome ?? actor?.nome,
       statusAprovacao: row.statusAprovacao ?? 'rascunho',
       programadoFabricacao: row.programadoFabricacao ?? false,
     });
@@ -127,6 +151,11 @@ export const useLCStore = create<LCState>()((set, get) => ({
     }
     const added = rowToControleLC(data as ControleLcRow);
     set((s) => ({ items: [normalizeLc(added), ...s.items] }));
+    void recordLcHistory(
+      added,
+      'criado',
+      `Desenho/LC cadastrado na revisão ${added.revisao}.`
+    );
     return { ok: true };
   },
 
@@ -137,7 +166,13 @@ export const useLCStore = create<LCState>()((set, get) => ({
       const taken = get().items.some((x) => x.os === row.os && x.id !== id);
       if (taken) return { ok: false, error: 'Já existe uma LC com esta OS.' };
     }
-    const patch = controleLcToUpdate(row);
+    const nextRevision =
+      target.statusAprovacao === 'reprovado' && hasTechnicalChange(target, row)
+        ? target.revisao + 1
+        : row.revisao;
+    const patch = controleLcToUpdate(
+      nextRevision !== undefined ? { ...row, revisao: nextRevision } : row
+    );
     if (Object.keys(patch).length === 0) return { ok: true };
     const { data, error } = await supabase
       .from('controle_lc')
@@ -155,6 +190,13 @@ export const useLCStore = create<LCState>()((set, get) => ({
     set((s) => ({
       items: s.items.map((x) => (x.id === id ? normalizeLc(updated) : x)),
     }));
+    if (hasTechnicalChange(target, row)) {
+      void recordLcHistory(
+        updated,
+        'editado',
+        `Dados técnicos atualizados na revisão ${updated.revisao}.`
+      );
+    }
     return { ok: true };
   },
 
@@ -196,6 +238,7 @@ export const useLCStore = create<LCState>()((set, get) => ({
         status_aprovacao: 'aguardando_aprovacao',
         motivo_reprovacao: null,
         reprovado_em: null,
+        enviado_aprovacao_em: nowIso(),
       })
       .eq('id', id)
       .select('*')
@@ -205,6 +248,11 @@ export const useLCStore = create<LCState>()((set, get) => ({
     set((s) => ({
       items: s.items.map((x) => (x.id === id ? normalizeLc(updated) : x)),
     }));
+    void recordLcHistory(
+      updated,
+      'enviado_aprovacao',
+      `Revisão ${updated.revisao} enviada para aprovação técnica.`
+    );
     return { ok: true };
   },
 
@@ -231,6 +279,11 @@ export const useLCStore = create<LCState>()((set, get) => ({
     set((s) => ({
       items: s.items.map((x) => (x.id === id ? normalizeLc(updated) : x)),
     }));
+    void recordLcHistory(
+      updated,
+      'aprovado',
+      `Revisão ${updated.revisao} aprovada por ${aprovadorNome}.`
+    );
     return { ok: true };
   },
 
@@ -261,6 +314,11 @@ export const useLCStore = create<LCState>()((set, get) => ({
     set((s) => ({
       items: s.items.map((x) => (x.id === id ? normalizeLc(updated) : x)),
     }));
+    void recordLcHistory(
+      updated,
+      'reprovado',
+      `Revisão ${updated.revisao} reprovada. Motivo: ${trimmed}`
+    );
     useNotificationStore.getState().add({
       title: 'LC reprovada',
       body: `OS ${target.os} foi reprovada. ${trimmed.slice(0, 160)}${
@@ -274,9 +332,14 @@ export const useLCStore = create<LCState>()((set, get) => ({
   setProgramadoFabricacao: async (id, value) => {
     const target = get().items.find((x) => x.id === id);
     if (!target || target.statusAprovacao !== 'aprovado') return;
+    const actor = useAuthStore.getState().user;
     const { data, error } = await supabase
       .from('controle_lc')
-      .update({ programado_fabricacao: value })
+      .update({
+        programado_fabricacao: value,
+        programado_fabricacao_em: value ? nowIso() : null,
+        pcp_nome: value ? actor?.nome ?? 'PCP' : null,
+      })
       .eq('id', id)
       .select('*')
       .single();
@@ -285,5 +348,12 @@ export const useLCStore = create<LCState>()((set, get) => ({
     set((s) => ({
       items: s.items.map((x) => (x.id === id ? normalizeLc(updated) : x)),
     }));
+    void recordLcHistory(
+      updated,
+      'programacao_pcp',
+      value
+        ? 'PCP marcou o desenho como programado para fabricação.'
+        : 'PCP removeu a marcação de programação para fabricação.'
+    );
   },
 }));

@@ -113,6 +113,9 @@ export function ControleLCPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-bold text-cyan-300">OS {item.os}</span>
                     <StatusBadge status={item.statusAprovacao} />
+                    <span className="rounded-full bg-white/5 px-2 py-0.5 text-xs text-slate-400">
+                      Rev. {item.revisao}
+                    </span>
                   </div>
                   <p className="mt-1 truncate text-slate-200">{item.cliente}</p>
                   <p className="truncate text-sm text-slate-500">{item.equipamento}</p>

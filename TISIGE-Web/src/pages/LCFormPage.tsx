@@ -7,6 +7,7 @@ import {
   canSubmitForApproval,
   resolvePapel,
 } from '@/auth/permissions';
+import { LCHistoryTimeline } from '@/components/LCHistoryTimeline';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -16,6 +17,7 @@ import { SETORES, type ControleLC } from '@/types/models';
 
 const empty: Omit<ControleLC, 'id'> = {
   arquivo: '',
+  revisao: 0,
   os: '',
   cliente: '',
   equipamento: '',
@@ -211,7 +213,21 @@ export function LCFormPage() {
       <div className="mx-auto max-w-2xl space-y-4">
         {row ? (
           <div className="space-y-3 rounded-2xl border border-[var(--color-tisige-border)] bg-[var(--color-tisige-elevated)] p-4">
-            <StatusBadge status={form.statusAprovacao} />
+            <div className="flex flex-wrap items-center gap-2">
+              <StatusBadge status={form.statusAprovacao} />
+              <span className="rounded-full bg-white/5 px-2.5 py-0.5 text-xs font-semibold text-slate-300">
+                Revisão {form.revisao}
+              </span>
+            </div>
+            <div className="grid gap-2 text-xs text-slate-500 sm:grid-cols-2">
+              <p>Cadastrado por: {form.criadoPorNome || '—'}</p>
+              <p>
+                Enviado aprovação:{' '}
+                {form.enviadoAprovacaoEm
+                  ? new Date(form.enviadoAprovacaoEm).toLocaleString('pt-BR')
+                  : '—'}
+              </p>
+            </div>
             {form.statusAprovacao === 'aprovado' && (
               <p className="text-xs text-slate-500">
                 {form.aprovadorNome ? `Aprovado por ${form.aprovadorNome}` : 'Aprovado'}{' '}
@@ -227,14 +243,27 @@ export function LCFormPage() {
               </div>
             ) : null}
             {form.statusAprovacao === 'aprovado' && form.programadoFabricacao ? (
-              <p className="text-sm font-semibold text-cyan-400">
-                Programado para fabricação (PCP)
-              </p>
+              <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-3">
+                <p className="text-sm font-semibold text-cyan-300">
+                  Programado para fabricação (PCP)
+                </p>
+                <p className="text-xs text-slate-500">
+                  {form.pcpNome ? `Responsável: ${form.pcpNome}` : 'Responsável: —'}
+                  {form.programadoFabricacaoEm
+                    ? ` · ${new Date(form.programadoFabricacaoEm).toLocaleString('pt-BR')}`
+                    : ''}
+                </p>
+              </div>
             ) : null}
           </div>
         ) : null}
 
-        <Input label="Arquivo" value={form.arquivo} onChange={(e) => set('arquivo')(e.target.value)} readOnly={!editable} />
+        <Input
+          label="Arquivo/link do desenho técnico"
+          value={form.arquivo}
+          onChange={(e) => set('arquivo')(e.target.value)}
+          readOnly={!editable}
+        />
         <Input
           label="OS *"
           value={form.os}
@@ -336,6 +365,7 @@ export function LCFormPage() {
             <Send className="size-4" /> Enviar para aprovação técnica
           </Button>
         ) : null}
+        {row ? <LCHistoryTimeline lcId={row.id} /> : null}
       </div>
     </div>
   );

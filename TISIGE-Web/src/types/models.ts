@@ -10,6 +10,7 @@ export type PapelUsuario =
   | 'visualizador';
 
 export interface User {
+  id?: string;
   username: string;
   nome: string;
   email: string;
@@ -27,6 +28,7 @@ export type StatusAprovacao =
 export interface ControleLC {
   id: string;
   arquivo: string;
+  revisao: number;
   os: string;
   cliente: string;
   equipamento: string;
@@ -44,6 +46,30 @@ export interface ControleLC {
   reprovadoEm?: string;
   aprovadorNome?: string;
   programadoFabricacao: boolean;
+  programadoFabricacaoEm?: string;
+  pcpNome?: string;
+  enviadoAprovacaoEm?: string;
+  criadoPorNome?: string;
+  updatedAt?: string;
+}
+
+export type LcHistoryAction =
+  | 'criado'
+  | 'editado'
+  | 'enviado_aprovacao'
+  | 'aprovado'
+  | 'reprovado'
+  | 'programacao_pcp';
+
+export interface LcHistoryEvent {
+  id: string;
+  lcId: string;
+  os: string;
+  acao: LcHistoryAction;
+  descricao: string;
+  responsavelNome: string;
+  responsavelPapel?: PapelUsuario;
+  createdAt: string;
 }
 
 export const SETORES = [

@@ -28,6 +28,7 @@ function normalizePapel(p: string | null | undefined): PapelUsuario | undefined 
 export function profileToUser(row: ProfileRow, fallbackEmail: string): User {
   const email = row.email ?? fallbackEmail;
   return {
+    id: row.id,
     username: (row.username ?? email.split('@')[0] ?? 'usuario').toLowerCase(),
     nome: row.full_name?.trim() || email.split('@')[0] || 'Usuário',
     email,

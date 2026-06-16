@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { canApprove } from '@/auth/permissions';
+import { LCHistoryTimeline } from '@/components/LCHistoryTimeline';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Button } from '@/components/ui/Button';
 import { useAuthStore } from '@/store/authStore';
@@ -82,12 +83,22 @@ export function LCApprovalDetailPage() {
       <div className="mx-auto max-w-lg space-y-4">
         <StatusBadge status={row.statusAprovacao} />
         <Field k="Arquivo" v={row.arquivo || '—'} />
+        <Field k="Revisão" v={String(row.revisao)} />
+        <Field k="Cadastrado por" v={row.criadoPorNome || '—'} />
         <Field k="Cliente" v={row.cliente} />
         <Field k="Equipamento" v={row.equipamento} />
         <Field k="Contrato" v={isoToBR(row.dtContratual)} />
         <Field k="Recebimento" v={isoToBR(row.dtRecebimento)} />
         <Field k="Setor" v={row.setor} />
         <Field k="Gaveta" v={row.gaveta || '—'} />
+        <Field
+          k="Enviado aprovação"
+          v={
+            row.enviadoAprovacaoEm
+              ? new Date(row.enviadoAprovacaoEm).toLocaleString('pt-BR')
+              : '—'
+          }
+        />
 
         {allowDecision ? (
           <div className="flex flex-col gap-3 pt-4 sm:flex-row">
@@ -124,6 +135,8 @@ export function LCApprovalDetailPage() {
             </div>
           </div>
         ) : null}
+
+        <LCHistoryTimeline lcId={row.id} />
       </div>
     </div>
   );

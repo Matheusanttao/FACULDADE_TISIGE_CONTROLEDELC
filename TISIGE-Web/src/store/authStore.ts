@@ -53,6 +53,7 @@ function mapAuthError(
 function fallbackUser(session: Session): User {
   const email = session.user.email ?? '';
   return {
+    id: session.user.id,
     username: (email.split('@')[0] || 'usuario').toLowerCase(),
     nome: String(session.user.user_metadata?.full_name ?? email.split('@')[0] ?? ''),
     email,
