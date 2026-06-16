@@ -123,13 +123,34 @@ function createTimeoutAbortSignal(ms: number): AbortSignal {
 
 const LC_TIMEOUT_MSG =
   'Tempo esgotado ao carregar os LCs. Verifique a rede, o .env (URL/chave do Supabase) e tente de novo.';
+const CONTROLE_LC_SELECT = `
+  id,
+  arquivo,
+  os,
+  cliente,
+  equipamento,
+  dt_contratual,
+  dt_recebimento,
+  dt_retirada,
+  resp_retirada,
+  setor,
+  gaveta,
+  data_limite_testes,
+  gestao_finalizado,
+  status_aprovacao,
+  motivo_reprovacao,
+  aprovado_em,
+  reprovado_em,
+  aprovador_nome,
+  programado_fabricacao
+`;
 
 export async function fetchAllControleLc(): Promise<ControleLC[]> {
   const signal = createTimeoutAbortSignal(LC_FETCH_TIMEOUT_MS);
   try {
     const { data, error } = await supabase
       .from('controle_lc')
-      .select('*')
+      .select(CONTROLE_LC_SELECT)
       .order('created_at', { ascending: false })
       .abortSignal(signal);
 
@@ -153,7 +174,7 @@ export async function fetchControleLcById(
 ): Promise<ControleLC | null> {
   const { data, error } = await supabase
     .from('controle_lc')
-    .select('*')
+    .select(CONTROLE_LC_SELECT)
     .eq('id', id)
     .maybeSingle();
 

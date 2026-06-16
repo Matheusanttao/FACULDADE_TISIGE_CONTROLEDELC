@@ -37,6 +37,10 @@ export function clearSupabaseAuthStorage(): void {
   if (typeof window === 'undefined') return;
   const key = getSupabaseAuthStorageKey();
   if (key) localStorage.removeItem(key);
+  localStorage.removeItem('supabase.auth.token');
+  Object.keys(localStorage)
+    .filter((k) => k.startsWith('sb-') && k.endsWith('-auth-token'))
+    .forEach((k) => localStorage.removeItem(k));
 }
 
 // Evita crash em runtime quando env está ausente no deploy.

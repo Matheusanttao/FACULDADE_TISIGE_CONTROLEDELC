@@ -24,11 +24,15 @@ function normalizeLc(row: ControleLC): ControleLC {
   };
 }
 
+const LC_CACHE_MS = 30_000;
+let hydratePromise: Promise<void> | null = null;
+
 interface LCState {
   items: ControleLC[];
   loading: boolean;
   error: string | null;
-  hydrate: () => Promise<void>;
+  lastHydratedAt: number | null;
+  hydrate: (force?: boolean) => Promise<void>;
   fetchById: (id: string) => Promise<ControleLC | null>;
   add: (row: Omit<ControleLC, 'id'>) => Promise<{ ok: boolean; error?: string }>;
   update: (id: string, row: Partial<ControleLC>) => Promise<{ ok: boolean; error?: string }>;
@@ -47,18 +51,43 @@ export const useLCStore = create<LCState>()((set, get) => ({
   items: [],
   loading: false,
   error: null,
+  lastHydratedAt: null,
 
-  clear: () => set({ items: [], error: null }),
+  clear: () => {
+    hydratePromise = null;
+    set({ items: [], loading: false, error: null, lastHydratedAt: null });
+  },
 
-  hydrate: async () => {
-    set({ loading: true, error: null });
-    try {
-      const list = await fetchAllControleLc();
-      set({ items: list.map(normalizeLc), loading: false });
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      set({ error: msg, loading: false });
+  hydrate: async (force = false) => {
+    const state = get();
+    if (!force) {
+      if (state.loading && hydratePromise) return hydratePromise;
+      if (
+        state.items.length > 0 &&
+        state.lastHydratedAt &&
+        Date.now() - state.lastHydratedAt < LC_CACHE_MS
+      ) {
+        return;
+      }
     }
+
+    set({ loading: true, error: null });
+    hydratePromise = (async () => {
+      try {
+        const list = await fetchAllControleLc();
+        set({
+          items: list.map(normalizeLc),
+          loading: false,
+          lastHydratedAt: Date.now(),
+        });
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        set({ error: msg, loading: false });
+      } finally {
+        hydratePromise = null;
+      }
+    })();
+    return hydratePromise;
   },
 
   fetchById: async (id: string) => {

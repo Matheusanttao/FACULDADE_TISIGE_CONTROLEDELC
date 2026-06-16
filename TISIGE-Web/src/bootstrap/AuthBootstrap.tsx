@@ -36,13 +36,8 @@ export function AuthBootstrap() {
         const { data } = await withTimeout(supabase.auth.getSession(), BOOT_MS);
         if (!mounted) return;
         if (data.session) {
-          await withTimeout(
-            (async () => {
-              await hydrateAuthUser(data.session);
-              await useLCStore.getState().hydrate();
-            })(),
-            BOOT_MS
-          );
+          await withTimeout(hydrateAuthUser(data.session), BOOT_MS);
+          void useLCStore.getState().hydrate();
         } else {
           useAuthStore.setState({ user: null });
           useLCStore.getState().clear();
@@ -61,7 +56,7 @@ export function AuthBootstrap() {
       if (!mounted) return;
       if (session) {
         await hydrateAuthUser(session);
-        await useLCStore.getState().hydrate();
+        void useLCStore.getState().hydrate();
       } else {
         useAuthStore.setState({ user: null });
         useLCStore.getState().clear();

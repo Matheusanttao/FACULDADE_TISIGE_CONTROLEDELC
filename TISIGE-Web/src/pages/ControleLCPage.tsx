@@ -9,6 +9,8 @@ import { useLCStore } from '@/store/lcStore';
 import type { ControleLC } from '@/types/models';
 import { isoToBR } from '@/utils/gestaoLcFinal';
 
+const INITIAL_VISIBLE_ROWS = 100;
+
 export function ControleLCPage() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
@@ -18,10 +20,15 @@ export function ControleLCPage() {
   const hydrate = useLCStore((s) => s.hydrate);
   const remove = useLCStore((s) => s.remove);
   const [q, setQ] = useState('');
+  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_ROWS);
 
   useEffect(() => {
     void hydrate();
   }, [hydrate]);
+
+  useEffect(() => {
+    setVisibleCount(INITIAL_VISIBLE_ROWS);
+  }, [q]);
 
   const filtered = useMemo(() => {
     const t = q.trim().toLowerCase();
@@ -34,6 +41,11 @@ export function ControleLCPage() {
     );
   }, [items, q]);
 
+  const visibleItems = useMemo(
+    () => filtered.slice(0, visibleCount),
+    [filtered, visibleCount]
+  );
+  const remainingCount = filtered.length - visibleItems.length;
   const fabOk = canCreateLC(user);
 
   const onDelete = async (row: ControleLC) => {
@@ -75,7 +87,7 @@ export function ControleLCPage() {
             type="button"
             variant="ghost"
             className="mt-3"
-            onClick={() => void hydrate()}
+            onClick={() => void hydrate(true)}
           >
             Tentar novamente
           </Button>
@@ -90,7 +102,7 @@ export function ControleLCPage() {
         <p className="text-center text-slate-500">Nenhum registro encontrado.</p>
       ) : (
         <div className="grid gap-3">
-          {filtered.map((item) => {
+          {visibleItems.map((item) => {
             const canEdit = canEditLCRecord(user, item);
             return (
               <div
@@ -134,6 +146,16 @@ export function ControleLCPage() {
               </div>
             );
           })}
+          {remainingCount > 0 ? (
+            <Button
+              type="button"
+              variant="ghost"
+              className="mt-2"
+              onClick={() => setVisibleCount((n) => n + INITIAL_VISIBLE_ROWS)}
+            >
+              Mostrar mais {Math.min(remainingCount, INITIAL_VISIBLE_ROWS)} de {remainingCount}
+            </Button>
+          ) : null}
         </div>
       )}
     </div>

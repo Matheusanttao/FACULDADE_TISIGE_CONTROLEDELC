@@ -62,6 +62,7 @@ function fallbackUser(session: Session): User {
 }
 
 const PROFILE_FETCH_TIMEOUT_MS = 12_000;
+const LOGOUT_TIMEOUT_MS = 5_000;
 
 async function resolveProfileUser(
   userId: string,
@@ -174,14 +175,25 @@ export const useAuthStore = create<AuthState>()((set) => ({
     }
   },
   logout: async () => {
-    const { error } = await supabase.auth.signOut({ scope: 'local' });
-    if (error && import.meta.env.DEV) {
-      console.warn('[TISIGE] signOut:', error.message);
-    }
     clearSupabaseAuthStorage();
-    set({ user: null });
+    set({ user: null, ready: true });
     const { useLCStore } = await import('@/store/lcStore');
     useLCStore.getState().clear();
+    try {
+      const result = await Promise.race([
+        supabase.auth.signOut({ scope: 'local' }),
+        new Promise<null>((resolve) =>
+          setTimeout(() => resolve(null), LOGOUT_TIMEOUT_MS)
+        ),
+      ]);
+      if (result?.error && import.meta.env.DEV) {
+        console.warn('[TISIGE] signOut:', result.error.message);
+      }
+    } catch (e) {
+      if (import.meta.env.DEV) {
+        console.warn('[TISIGE] signOut:', e);
+      }
+    }
   },
 }));
 

@@ -332,7 +332,55 @@ set
 where lower(email) = 'admin@admin.local';
 
 -- ============================================================================
--- 9) DADOS DE DEMONSTRACAO
+-- 9) DADOS DE EXEMPLO SIMPLES
+-- ============================================================================
+
+insert into public.controle_lc (
+  arquivo,
+  os,
+  cliente,
+  equipamento,
+  dt_contratual,
+  dt_recebimento,
+  dt_retirada,
+  resp_retirada,
+  setor,
+  gaveta,
+  data_limite_testes,
+  gestao_finalizado
+) values
+  (
+    'LC-001',
+    '17242',
+    'Cliente Alpha',
+    'Motor 450kW',
+    '2024-02-01',
+    '2024-02-10',
+    '2024-03-01',
+    'Joao Silva',
+    'Teste',
+    'G-12',
+    '2024-03-28',
+    false
+  ),
+  (
+    'LC-002',
+    '17232',
+    'Cliente Beta',
+    'Gerador 300kVA',
+    '2024-02-15',
+    '2024-03-01',
+    null,
+    '',
+    'Mecanica',
+    null,
+    '2024-03-15',
+    false
+  )
+on conflict (os) do nothing;
+
+-- ============================================================================
+-- 10) DADOS DE DEMONSTRACAO
 -- ============================================================================
 
 insert into public.controle_lc (
@@ -535,7 +583,7 @@ on conflict (os) do update set
   programado_fabricacao = excluded.programado_fabricacao;
 
 -- ============================================================================
--- 10) CHECK FINAL
+-- 11) CHECK FINAL
 -- ============================================================================
 
 select
