@@ -1,0 +1,6 @@
+# Pasta reservada para atas oficiais assinadas (PROPPG).
+# Permitir apenas arquivos PDF neste diretório.
+
+*
+!.gitignore
+!*.pdf
